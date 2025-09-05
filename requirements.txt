@@ -4,4 +4,6 @@ numpy
 pymongo
 matplotlib
 seaborn
-plotly
+certifi
+pymongo
+# -e .
