@@ -9,4 +9,6 @@ pymongo
 pymongo[srv]
 pymongo==4.14.1
 scikit-learn
+dill
+pyaml
 # -e .

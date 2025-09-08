@@ -38,7 +38,7 @@ class DataIngestion:
                 df = df.drop(columns=["_id"],axis=1)
 
             df.replace(to_replace="na",value=np.nan,inplace=True)
-            logging.info(f"Removed _id columns from the dataframe and replaced na values with np.nan++++++++++++")
+            logging.info(f"Removed _id columns from the dataframe and replaced na values with np.nan")
             return df
         except Exception as e:
             raise NetworkSecurityException(e,sys)
