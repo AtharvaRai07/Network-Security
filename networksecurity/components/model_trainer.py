@@ -9,7 +9,7 @@ from networksecurity.entity.artifact_entity import DataTransformationArtifact, M
 
 from networksecurity.utils.ml_utils.model.estimator import NetworkModel
 from networksecurity.utils.main_utils.utils import load_object, save_object
-from networksecurity.utils.main_utils.utils import save_numpy_array_data, load_numpy_array_data,evaluate_models
+from networksecurity.utils.main_utils.utils import load_numpy_array_data,evaluate_models
 from networksecurity.utils.ml_utils.metric.classification_metric import get_classification_score
 
 from sklearn.linear_model import LogisticRegression
