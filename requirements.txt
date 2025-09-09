@@ -10,8 +10,9 @@ pymongo[srv]
 pymongo==4.14.1
 scikit-learn
 pyaml
-mlflow
+mlflow<3
 xgboost
 lightgbm
 catboost
+dagshub
 # -e .

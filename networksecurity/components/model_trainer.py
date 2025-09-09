@@ -22,37 +22,40 @@ class ModelTrainer:
                  data_transformation_artifact: DataTransformationArtifact):
         try:
             self.model_trainer_config = model_trainer_config
-            self.data_transformation_config = data_transformation_artifact
+            self.data_transformation_artifact = data_transformation_artifact
         except Exception as e:
             raise NetworkSecurityException(e, sys)
 
-    def track_mlflow(self,best_model,classification_metric):
-        with mlflow.start_run():
-            f1_score = classification_metric.f1_score
-            precision_score = classification_metric.precision_score
-            recall_score = classification_metric.recall_score
-            accuracy_score = classification_metric.accuracy_score
+    def track_mlflow(self,best_model,classification_train_metric,classification_test_metric):
+         with mlflow.start_run():
+            mlflow.set_tag("best_model_name", best_model)
 
-            mlflow.log_metric("F1 Score", f1_score)
-            mlflow.log_metric("Precision Score", precision_score)
-            mlflow.log_metric("Recall Score", recall_score)
-            mlflow.log_metric("Accuracy Score", accuracy_score)
-            mlflow.sklearn.log_model(best_model, "model")
+            # log train metrics
+            mlflow.log_metric("train_f1", classification_train_metric.f1_score)
+            mlflow.log_metric("train_precision", classification_train_metric.precision_score)
+            mlflow.log_metric("train_recall", classification_train_metric.recall_score)
+            mlflow.log_metric("train_accuracy", classification_train_metric.accuracy_score)
 
+            # log test metrics
+            mlflow.log_metric("test_f1", classification_test_metric.f1_score)
+            mlflow.log_metric("test_precision", classification_test_metric.precision_score)
+            mlflow.log_metric("test_recall", classification_test_metric.recall_score)
+            mlflow.log_metric("test_accuracy", classification_test_metric.accuracy_score)
 
+            mlflow.log_artifact(self.model_trainer_config.trained_model_file_path, artifact_path="pipeline")
 
 
     def train_model(self, X_train, y_train, X_test, y_test):
         try:
             models = {
-                "Linear Regression": LogisticRegression(verbose=1),
+                "Logistic Regression": LogisticRegression(verbose=1),
                 "KNearest Neighbors": KNeighborsClassifier(),
                 "Decision Tree": DecisionTreeClassifier(),
                 "Random Forest": RandomForestClassifier()
             }
 
             params = {
-                "Linear Regression": {
+                "Logistic Regression": {
                     'C': [0.1, 1.0, 10, 100],
                     'solver': ['liblinear', 'saga']
                 },
@@ -77,10 +80,9 @@ class ModelTrainer:
             model_report: dict = evaluate_models(X_train=X_train,y_train=y_train,X_test=X_test,y_test=y_test,models=models,param=params)
             logging.info(f"Model Report: {model_report}")
 
-            best_model_score = max(sorted(model_report.values()))
-            best_model_name = list(model_report.keys())[
-                list(model_report.values()).index(best_model_score)
-            ]
+            best_model_name = max(model_report, key=model_report.get)
+            best_model_score = model_report[best_model_name]
+
             logging.info(f"Best found model on both training and testing dataset is {best_model_name} with accuracy score: {best_model_score}")
             best_model = models[best_model_name]
             logging.info(f"Best Model: {best_model}")
@@ -88,22 +90,18 @@ class ModelTrainer:
             y_train_pred = best_model.predict(X_train)
             classification_train_metric = get_classification_score(y_true=y_train, y_pred=y_train_pred)
 
-            self.track_mlflow(best_model,classification_train_metric)
-
-
-
             y_test_pred = best_model.predict(X_test)
             classification_test_metric = get_classification_score(y_true=y_test, y_pred=y_test_pred)
 
-            self.track_mlflow(best_model,classification_test_metric)
-
-            preprocessor = load_object(file_path=self.data_transformation_config.transformed_object_file_path)
+            preprocessor = load_object(file_path=self.data_transformation_artifact.transformed_object_file_path)
 
             model_dir_path = os.path.dirname(self.model_trainer_config.trained_model_file_path)
             os.makedirs(model_dir_path, exist_ok=True)
 
             Network_Model = NetworkModel(preprocessor=preprocessor, model=best_model)
             save_object(file_path=self.model_trainer_config.trained_model_file_path, obj=Network_Model)
+
+            self.track_mlflow(best_model=best_model,classification_train_metric=classification_train_metric,classification_test_metric=classification_test_metric)
 
             model_trainer_artifact = ModelTrainerArtifact(
                 trained_model_file_path=self.model_trainer_config.trained_model_file_path,
@@ -119,8 +117,8 @@ class ModelTrainer:
 
     def initiate_model_trainer(self) -> ModelTrainerArtifact:
         try:
-            train_file_path = self.data_transformation_config.transformed_train_file_path
-            test_file_path = self.data_transformation_config.transformed_test_file_path
+            train_file_path = self.data_transformation_artifact.transformed_train_file_path
+            test_file_path = self.data_transformation_artifact.transformed_test_file_path
 
             train_arr = load_numpy_array_data(train_file_path)
             test_arr = load_numpy_array_data(test_file_path)
