@@ -136,3 +136,5 @@ class ModelTrainer:
         except Exception as e:
             raise NetworkSecurityException(e, sys)
 
+        finally:
+            mlflow.end_run()
