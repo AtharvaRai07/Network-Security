@@ -15,4 +15,7 @@ xgboost
 lightgbm
 catboost
 dagshub
+fastapi
+uvicorn
+python-multipart
 # -e .

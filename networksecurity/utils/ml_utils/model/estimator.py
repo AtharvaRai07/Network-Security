@@ -15,7 +15,7 @@ class NetworkModel:
         try:
             X_transform = self.preprocessor.transform(x)
             y_hat = self.model.predict(X_transform)
-            logging.log("Prediction completed successfully")
+            logging.info("Prediction completed successfully")
             return y_hat
         except Exception as e:
             raise NetworkSecurityException(e, sys) from e
