@@ -32,7 +32,8 @@ RUN apt-get update && apt-get install -y --no-install-recommends \
     unzip \
     && curl "https://awscli.amazonaws.com/awscli-exe-linux-x86_64.zip" -o "awscliv2.zip" \
     && unzip awscliv2.zip \
-    && ./aws/install \
+    && mkdir -p /tmp/aws-cli \
+    && ./aws/install --install-dir /tmp/aws-cli --bin-dir /usr/local/bin \
     && rm -rf awscliv2.zip aws \
     && apt-get clean \
     && rm -rf /var/lib/apt/lists/*
