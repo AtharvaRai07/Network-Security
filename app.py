@@ -46,7 +46,7 @@ app.add_middleware(
 
 @app.get("/", tags=["authentication"])
 async def index():
-    return RedirectResponse(url="/docs")
+    return RedirectResponse(url="/docs", status_code=303)
 
 @app.get("/train")
 async def train_route():
@@ -82,6 +82,6 @@ async def predict_route(request:Request,file:UploadFile = File(...)):
 
 if __name__ == "__main__":
     try:
-        app_run(app, host="127.0.0.1",port=8000)
+        app_run(app, host="localhost",port=8000)
     except Exception as e:
         raise NetworkSecurityException(e, sys)

@@ -17,5 +17,5 @@ catboost
 dagshub
 fastapi
 uvicorn
-python-multipart
+python-multipart>=0.0.5
 # -e .
